@@ -17,12 +17,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
         // Formato esperado: "salvar acesso ti url:XXX login:XXX senha:XXX"
         preg_match('/url:(.*) login:(.*) senha:(.*)/i', $msg, $matches);
         if (count($matches) === 4) {
+            $url = trim($matches[1]);
+            // Remove ponto final acidental no final da URL
+            $url = rtrim($url, '.'); 
+            
             $vault->store('it_portal', [
-                'url' => trim($matches[1]),
+                'url' => $url,
                 'login' => trim($matches[2]),
                 'pass' => trim($matches[3])
             ]);
-            $chatResponse = "✅ Link neural estabelecido! Credenciais do portal de TI foram criptografadas e armazenadas na minha memória segura.";
+            $chatResponse = "✅ Link neural estabelecido! Credenciais do portal de TI foram criptografadas e armazenadas na minha memória segura (URL limpa: $url).";
         } else {
             $chatResponse = "❌ Formato inválido. Use: 'salvar acesso ti url:https://... login:usuario senha:123'";
         }
@@ -32,11 +36,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
         $creds = $vault->retrieve('it_portal');
         if ($creds) {
             $checker = new TicketChecker();
-            // Aqui usamos a lógica simplificada; o AiCode executa a tarefa técnica
-            $html = $checker->loginAndCheck($creds['url'], $creds['url'], [
-                'usuario' => $creds['login'],
-                'senha' => $creds['pass']
-            ]);
+            
+            // Ajustamos o mapeamento aqui: muitos sites usam 'cpf' e 'password' ou 'senha'
+            $postData = [
+                'cpf' => $creds['login'],
+                'password' => $creds['pass'], // Tenta 'password'
+                'senha' => $creds['pass']      // Tenta 'senha' também
+            ];
+
+            $html = $checker->loginAndCheck($creds['url'], $creds['url'], $postData);
             $res = $checker->parseTickets($html);
             $chatResponse = "🔍 Verificação concluída no portal {$creds['url']}.\nResultado: {$res['status']} ({$res['total_abertos']} detectados).";
         } else {
