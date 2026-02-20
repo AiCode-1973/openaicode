@@ -5,14 +5,52 @@ $chatResponse = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
     require_once 'scripts/connector.php';
+    require_once 'scripts/vault_manager.php';
+    require_once 'scripts/ticket_engine.php';
+    
+    $vault = new MemoryVault();
     $ai = new AiCodeConnector($apiKey);
+    $msg = $_POST['message'];
     
-    $soul = file_exists('SOUL.md') ? file_get_contents('SOUL.md') : "";
-    $user = file_exists('USER.md') ? file_get_contents('USER.md') : "";
-    $memory = file_exists('MEMORY.md') ? file_get_contents('MEMORY.md') : "";
-    
-    $context = "Identidade: $soul\nUsuário: $user\nMemória: $memory";
-    $chatResponse = $ai->ASK($_POST['message'], $context);
+    // Lógica de Comando: Salvar Credenciais
+    if (strpos(strtolower($msg), 'salvar acesso ti') !== false) {
+        // Formato esperado: "salvar acesso ti url:XXX login:XXX senha:XXX"
+        preg_match('/url:(.*) login:(.*) senha:(.*)/i', $msg, $matches);
+        if (count($matches) === 4) {
+            $vault->store('it_portal', [
+                'url' => trim($matches[1]),
+                'login' => trim($matches[2]),
+                'pass' => trim($matches[3])
+            ]);
+            $chatResponse = "✅ Link neural estabelecido! Credenciais do portal de TI foram criptografadas e armazenadas na minha memória segura.";
+        } else {
+            $chatResponse = "❌ Formato inválido. Use: 'salvar acesso ti url:https://... login:usuario senha:123'";
+        }
+    } 
+    // Lógica de Comando: Verificar Chamados
+    elseif (strpos(strtolower($msg), 'verificar chamados') !== false) {
+        $creds = $vault->retrieve('it_portal');
+        if ($creds) {
+            $checker = new TicketChecker();
+            // Aqui usamos a lógica simplificada; o AiCode executa a tarefa técnica
+            $html = $checker->loginAndCheck($creds['url'], $creds['url'], [
+                'usuario' => $creds['login'],
+                'senha' => $creds['pass']
+            ]);
+            $res = $checker->parseTickets($html);
+            $chatResponse = "🔍 Verificação concluída no portal {$creds['url']}.\nResultado: {$res['status']} ({$res['total_abertos']} detectados).";
+        } else {
+            $chatResponse = "⚠️ Eu ainda não tenho as credenciais do portal de TI. Use o comando 'salvar acesso ti' primeiro.";
+        }
+    }
+    else {
+        // Resposta padrão da IA
+        $soul = file_exists('SOUL.md') ? file_get_contents('SOUL.md') : "";
+        $user = file_exists('USER.md') ? file_get_contents('USER.md') : "";
+        $memory = file_exists('MEMORY.md') ? file_get_contents('MEMORY.md') : "";
+        $context = "Identidade: $soul\nUsuário: $user\nMemória: $memory";
+        $chatResponse = $ai->ASK($msg, $context);
+    }
 }
 ?>
 <!DOCTYPE html>
