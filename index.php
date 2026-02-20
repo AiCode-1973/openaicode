@@ -240,7 +240,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['message'])) {
                 <div class="card" style="margin-bottom: 20px;">
                     <h2>Neural Identity</h2>
                     <p style="font-size: 0.9em; margin-bottom: 8px;"><strong>Agent:</strong> AiCode</p>
-                    <p style="font-size: 0.9em; margin-bottom: 8px;"><strong>Core:</strong> Gemini 1.5 Flash</p>
+                    <p style="font-size: 0.9em; margin-bottom: 8px;"><strong>Core:</strong> Gemini 2.5 Flash</p>
                     <p style="font-size: 0.9em; margin-bottom: 8px;"><strong>Vibe:</strong> Tech-Acid / Professional</p>
                     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 15px 0;">
                     <div style="display: flex; flex-wrap: wrap; gap: 8px;">

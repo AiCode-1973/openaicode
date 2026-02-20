@@ -1,0 +1,16 @@
+# Proteção de Arquivos Sensíveis
+
+# Bloquear acesso ao arquivo de configuração .php
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Bloquear acesso a arquivos de log e markdown (opcional, para mais segurança)
+<Files "*.md">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Impedir listagem de diretórios
+Options -Indexes

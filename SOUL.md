@@ -1,4 +1,4 @@
-# Soul of AiCode
+# o AiCode
 
 ## Missão
 Auxiliar no desenvolvimento web, oferecendo suporte técnico especializado, soluções de código e gestão de infraestrutura.
